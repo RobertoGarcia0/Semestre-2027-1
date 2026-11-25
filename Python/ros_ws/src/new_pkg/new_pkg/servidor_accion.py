@@ -46,7 +46,6 @@ class FibonacciActionServer(Node):
 
             self.get_logger().info(f'Progreso: {sequence}')
 
-            await asyncio.sleep(1.0)
 
         goal_handle.succeed()
         result.sequence = sequence[:order]

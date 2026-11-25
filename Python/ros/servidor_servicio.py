@@ -11,7 +11,7 @@ class ServiceServer(Node):
             self.callback
         )
 
-    def callback(self, request, response):
+    def callback(self, request:AddTwoInts.Request, response:AddTwoInts.Response):
         response.sum = request.a + request.b
         self.get_logger().info(
             f'{request.a} + {request.b} = {response.sum}'

@@ -17,14 +17,14 @@ class ServiceClient(Node):
 
         future = self.client.call_async(request)
         rclpy.spin_until_future_complete(self, future)
-
-        return future.result()
+        response:AddTwoInts.Response = future.result()
+        return response
 
 def main(args=None):
     rclpy.init(args=args)
     node = ServiceClient()
 
-    response = node.send_request(5, 8)
+    response:AddTwoInts.Response = node.send_request(5, 8)
 
     node.get_logger().info(f'Resultado: {response.sum}')
 
