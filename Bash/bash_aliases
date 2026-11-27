@@ -1,0 +1,106 @@
+#Bash aliases
+alias bash_source="source ~/.bashrc"
+alias bash_edit="gedit ~/.bashrc"
+alias bash_aliases="gedit ~/.bash_aliases"
+alias bash_history="gedit ~/.bash_history"
+alias update="sudo apt-get update"
+alias upgrade="sudo apt-get update && sudo apt-get upgrade -y"
+alias codegraph="code . --enable-unsafe-swiftshader"
+
+# ROS2 alias
+alias ros2id='echo $ROS_DOMAIN_ID'
+
+# ROS2 compile macros
+ros2compile() {
+  local dir="$PWD"
+  local dir_or="$PWD"
+  while [[ "$dir" != "/" ]]; do
+    local dirname="$(basename "$dir")"
+    if [[ "$dirname" == ws_* || "$dirname" == *_ws ]]; then
+      echo "Encontrado workspace: $dir"
+      cd "$dir" || return 1
+      if [[ -f "src/CMakeLists.txt" || -d "src" ]]; then
+        echo "Ejecutando: colcon build $*"
+        python3 -m colcon build "$@"
+        echo "Ejecutando: source install/setup.bash"
+        source install/setup.bash
+        cd "$dir_or" || return 1
+      else
+        echo "No parece ser un workspace válido (falta 'src')"
+      fi
+      return
+    fi
+    dir=$(dirname "$dir")
+  done
+  echo "No se encontró ningún directorio que empiece con 'ws_' o termine con '_ws'"
+}
+
+ros2symcompile() {
+  local dir="$PWD"
+  local dir_or="$PWD"
+  while [[ "$dir" != "/" ]]; do
+    local dirname="$(basename "$dir")"
+    if [[ "$dirname" == ws_* || "$dirname" == *_ws ]]; then
+      echo "Encontrado workspace: $dir"
+      cd "$dir" || return 1
+      if [[ -f "src/CMakeLists.txt" || -d "src" ]]; then
+        echo "Ejecutando: colcon build --symlink-install $*"
+        python3 -m colcon build --symlink-install "$@"
+        echo "Ejecutando: source install/setup.bash"
+        source install/setup.bash
+        cd "$dir_or" || return 1
+      else
+        echo "No parece ser un workspace válido (falta 'src')"
+      fi
+      return
+    fi
+    dir=$(dirname "$dir")
+  done
+  echo "No se encontró ningún directorio que empiece con 'ws_' o termine con '_ws'"
+}
+ros2symcompile-re() {
+  local dir="$PWD"
+  local dir_or="$PWD"
+  while [[ "$dir" != "/" ]]; do
+    local dirname="$(basename "$dir")"
+    if [[ "$dirname" == ws_* || "$dirname" == *_ws ]]; then
+      echo "Encontrado workspace: $dir"
+      cd "$dir" || return 1
+      if [[ -f "src/CMakeLists.txt" || -d "src" ]]; then
+      	echo "Eliminando build & install: "
+      	rm -r build/ install/
+        echo "Ejecutando: colcon build --symlink-install $*"
+        python3 -m colcon build --symlink-install "$@"
+        echo "Ejecutando: source install/setup.bash"
+        source install/setup.bash
+        cd "$dir_or" || return 1
+      else
+        echo "No parece ser un workspace válido (falta 'src')"
+      fi
+      return
+    fi
+    dir=$(dirname "$dir")
+  done
+  echo "No se encontró ningún directorio que empiece con 'ws_' o termine con '_ws'"
+}
+ros2sourcepkg() {
+  local dir="$PWD"
+  local dir_or="$PWD"
+  while [[ "$dir" != "/" ]]; do
+    local dirname="$(basename "$dir")"
+    if [[ "$dirname" == ws_* || "$dirname" == *_ws ]]; then
+      echo "Encontrado workspace: $dir"
+      cd "$dir" || return 1
+      if [[ -f "src/CMakeLists.txt" || -d "src" ]]; then
+        echo "Ejecutando: source install/setup.bash"
+        source install/setup.bash
+        cd "$dir_or" || return 1
+      else
+        echo "No parece ser un workspace válido (falta 'src')"
+      fi
+      return
+    fi
+    dir=$(dirname "$dir")
+  done
+  echo "No se encontró ningún directorio que empiece con 'ws_' o termine con '_ws'"
+}

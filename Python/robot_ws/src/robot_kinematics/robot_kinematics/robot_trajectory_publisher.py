@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import rclpy
 from rclpy.node import Node
-from robot_kinematics.kinematics import Robot
+from robot_kinematics.Kinematics import Robot
 from geometry_msgs.msg import Twist, PointStamped
 from sensor_msgs.msg import JointState
 

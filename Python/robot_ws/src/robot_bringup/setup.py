@@ -1,5 +1,5 @@
 from setuptools import find_packages, setup
-
+from glob import glob
 package_name = 'robot_bringup'
 
 setup(
@@ -10,10 +10,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        ('share/' + package_name + '/launch', ['launch/rviz_bringup.launch.py',
-                                               'launch/rviz_bringup_2.launch.py',
-                                               'launch/rviz_bringup_3.launch.py',
-                                               'launch/trajectory_bringup.launch.py']),
+        ('share/' + package_name + '/launch', glob('launch/*')),
         
     ],
     install_requires=['setuptools'],

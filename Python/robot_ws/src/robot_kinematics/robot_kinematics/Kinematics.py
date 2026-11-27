@@ -8,15 +8,17 @@ class Robot():
     th1, th2, th3 = symbols("theta_1,theta_2,theta_3")
 
     T_0_1 = self.tr_h(gamma=pi/2,
-                      alpha=th1)
+                      act=th1)
     T_1_2 = self.tr_h(x = l[0],
-                      alpha=th2)
+                      act=th2)
     T_2_3 = self.tr_h(x = l[1],
-                      alpha=th3)
+                      act=th3)
     T_3_p = self.tr_h(x=l[2])
 
     T_0_p = T_0_1 * T_1_2 * T_2_3 * T_3_p
     T_0_p = simplify(T_0_p)
+    # print(T_0_p[:3, 3])
+
     # Vector de postura
     xi_0_p = Matrix([T_0_p[0, 3],
                      T_0_p[2, 3],
@@ -35,6 +37,9 @@ class Robot():
     lam = a_0 + a_1 * t + a_2 * t**2 + a_3 * t**3 + a_4 * t**4 + a_5 * t**5    
     lam_dot = diff(lam, t)
     lam_dot_dot = diff(lam_dot, t)
+    #print(lam)
+    #print(lam_dot)
+    #print(lam_dot_dot)
     # Almacenar variables en el objeto
     self.th1, self.th2, self.th3 = th1, th2, th3
     self.xi_0_p = xi_0_p
@@ -69,13 +74,20 @@ class Robot():
     lam_s         = self.lam.subs(solutions)
     lam_dot_s     = self.lam_dot.subs(solutions)
     lam_dot_dot_s = self.lam_dot_dot.subs(solutions)
+    """
+    print("Polinomios lambda con valores sustituidos")
+    print(lam_s)
+    print(lam_dot_s)
+    print(lam_dot_dot_s)
+    """    
     
     # Ecuación de posiciones, velocidades y acc.
     xi_f = Matrix([xi_f[0], xi_f[1], xi_f[2]])
     xi_eq         = xi_i + (xi_f - xi_i) * lam_s
     xi_dot_eq     = (xi_f - xi_i) * lam_dot_s
     xi_dot_dot_eq = (xi_f - xi_i) * lam_dot_dot_s
-    
+    # print("Ecuaciones de posición en el tiempo")
+    # print(xi_eq)
     # Arreglos para almacenar muestreo
     # Tiempo
     t_m = Matrix.zeros(1, self.muestras)
@@ -90,6 +102,9 @@ class Robot():
       xi_m[:, i]         = xi_eq.        subs({self.t: t_m[i]})
       xi_dot_m[:, i]     = xi_dot_eq.    subs({self.t: t_m[i]})
       xi_dot_dot_m[:, i] = xi_dot_dot_eq.subs({self.t: t_m[i]})
+    print("Posición inicial del EF: ")
+    print(xi_m[:, 0])
+    print("Posición final del EF: ")
     print(xi_m[:, self.muestras - 1])
     # ---- Cinemática inversa
     # Velocidades de las juntas como ecuación
@@ -156,21 +171,31 @@ class Robot():
     th3_g.plot(self.t_m.T,  self.th_m[2, :].T, color=(0,0,1))
     plt.show()
     pass
-  def tr_h(self, x=0, y=0, z=0,
-                 gamma=0, beta=0, alpha=0):
-    t_x = Matrix([[1,          0,           0, x],
-                  [0, cos(gamma), -sin(gamma), 0],
-                  [0, sin(gamma),  cos(gamma), 0],
-                  [0,          0,           0, 1]])
-    t_y = Matrix([[ cos(beta),          0, sin(beta), 0],
-                  [         0,          1,         0, y],
-                  [-sin(beta),          0, cos(beta), 0],
-                  [         0,          0,         0, 1]])
-    t_z = Matrix([[cos(alpha), -sin(alpha), 0, 0],
-                  [sin(alpha),  cos(alpha), 0, 0],
-                  [         0,           0, 1, z],
-                  [         0,           0, 0, 1]])
-    tr = simplify(t_x * t_y * t_z)
+  def _pos(self, x=0, y=0, z=0):
+    pos = Matrix([[x],
+                  [y],
+                  [z]])
+    
+    return pos
+  def _rot(self, gamma:float=0, beta:float=0, alpha:float=0, act:Symbol=0):
+        R_x = Matrix([[1,          0,           0],
+                      [0, cos(gamma), -sin(gamma)],
+                      [0, sin(gamma),  cos(gamma)]])
+        R_y = Matrix([[cos(beta),  0, sin(beta)],
+                      [        0,  1,         0],
+                      [-sin(beta), 0, cos(beta)]])
+        R_z = Matrix([[cos(alpha), -sin(alpha), 0], 
+                      [sin(alpha),  cos(alpha), 0],
+                      [         0,           0, 1]])
+        R_act = Matrix([[cos(act), -sin(act), 0], 
+                        [sin(act),  cos(act), 0],
+                        [         0,           0, 1]])
+        # URDF maneja las rotaciones como zyx, y al final rotación de la junta
+        return R_z * R_y * R_x * R_act
+  def tr_h(self, x=0, y=0, z=0, gamma:float=0, beta:float=0, alpha:float=0, act:Symbol=0):
+    pos = self._pos(x, y, z)
+    rot = self._rot(gamma, beta, alpha, act)
+    tr = Matrix.vstack(Matrix.hstack(rot, pos), Matrix([0, 0, 0, 1]).T)
     return tr
 
 def main():
@@ -178,5 +203,6 @@ def main():
   robot.def_tray()
   robot.imp_tray()
   robot.imp_junt()
+  
 if __name__ == "__main__":
   main()
